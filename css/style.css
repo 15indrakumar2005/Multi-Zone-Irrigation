@@ -782,3 +782,15 @@ input {
     }
 
 }
+/* =========================================
+   DISABLED CONTROL BUTTONS
+========================================= */
+
+.control-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.control-button:not(:disabled) {
+    cursor: pointer;
+}
