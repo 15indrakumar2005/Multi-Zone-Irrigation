@@ -1,20 +1,678 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Multi-Zone Irrigation & Crop Prediction</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color"
+        content="#2e7d32">
+
+    <meta name="description"
+        content="IoT based Multi-Zone Irrigation and Crop Prediction System">
+
+    <title>Smart Irrigation Dashboard</title>
 
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <h1>Multi-Zone Irrigation System</h1>
+    <!-- ================= HEADER ================= -->
 
-    <p>Web dashboard setup successful.</p>
+    <header class="top-header">
+
+        <div class="header-content">
+
+            <div class="brand">
+                <div class="brand-icon">🌱</div>
+
+                <div>
+                    <h1>Smart Irrigation</h1>
+                    <p>Multi-Zone Irrigation & Crop Prediction</p>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <span>System Online</span>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="dashboard-container">
+
+
+        <!-- ================= WELCOME ================= -->
+
+        <section class="welcome-section">
+
+            <div>
+                <h2>Dashboard</h2>
+
+                <p>
+                    Monitor and control your smart irrigation
+                    system in real time.
+                </p>
+            </div>
+
+            <div class="last-update">
+                Last Update
+                <strong>--:--:--</strong>
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= ZONE CARDS ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                🌱 Irrigation Zones
+            </h2>
+
+
+            <div class="zone-grid">
+
+
+                <!-- ZONE 1 -->
+
+                <div class="card zone-card">
+
+                    <div class="card-header">
+
+                        <div class="card-title">
+                            <span class="card-icon">🌱</span>
+
+                            <div>
+                                <h3>Zone 1</h3>
+                                <p>Crop Area 1</p>
+                            </div>
+                        </div>
+
+                        <span class="badge badge-off">
+                            OFF
+                        </span>
+
+                    </div>
+
+
+                    <div class="soil-info">
+
+                        <span>Soil Moisture</span>
+
+                        <strong>
+                            <span id="soil1-value">--</span>%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress-bar">
+
+                        <div
+                            id="soil1-progress"
+                            class="progress-fill"
+                            style="width: 0%">
+                        </div>
+
+                    </div>
+
+
+                    <div class="zone-details">
+
+                        <div>
+                            <span>Valve</span>
+                            <strong id="valve1-status">
+                                OFF
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Watering</span>
+                            <strong id="zone1-status">
+                                Inactive
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ZONE 2 -->
+
+                <div class="card zone-card">
+
+                    <div class="card-header">
+
+                        <div class="card-title">
+
+                            <span class="card-icon">🌿</span>
+
+                            <div>
+                                <h3>Zone 2</h3>
+                                <p>Crop Area 2</p>
+                            </div>
+
+                        </div>
+
+                        <span class="badge badge-off">
+                            OFF
+                        </span>
+
+                    </div>
+
+
+                    <div class="soil-info">
+
+                        <span>Soil Moisture</span>
+
+                        <strong>
+                            <span id="soil2-value">--</span>%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress-bar">
+
+                        <div
+                            id="soil2-progress"
+                            class="progress-fill"
+                            style="width: 0%">
+                        </div>
+
+                    </div>
+
+
+                    <div class="zone-details">
+
+                        <div>
+                            <span>Valve</span>
+
+                            <strong id="valve2-status">
+                                OFF
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Watering</span>
+
+                            <strong id="zone2-status">
+                                Inactive
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= SYSTEM STATUS ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                ⚙ System Status
+            </h2>
+
+
+            <div class="status-grid">
+
+
+                <!-- PUMP -->
+
+                <div class="card status-card">
+
+                    <div class="status-card-icon pump-icon">
+                        💧
+                    </div>
+
+                    <div class="status-card-content">
+
+                        <span>Water Pump</span>
+
+                        <strong id="pump-status">
+                            OFF
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- WATER LEVEL -->
+
+                <div class="card status-card">
+
+                    <div class="status-card-icon water-icon">
+                        🚰
+                    </div>
+
+                    <div class="status-card-content">
+
+                        <span>Water Level</span>
+
+                        <strong id="water-level">
+                            NORMAL
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TEMPERATURE -->
+
+                <div class="card status-card">
+
+                    <div class="status-card-icon temp-icon">
+                        🌡️
+                    </div>
+
+                    <div class="status-card-content">
+
+                        <span>Temperature</span>
+
+                        <strong>
+                            <span id="temperature">
+                                --
+                            </span>°C
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HUMIDITY -->
+
+                <div class="card status-card">
+
+                    <div class="status-card-icon humidity-icon">
+                        💦
+                    </div>
+
+                    <div class="status-card-content">
+
+                        <span>Humidity</span>
+
+                        <strong>
+                            <span id="humidity">
+                                --
+                            </span>%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= WEATHER ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                🌦 Weather Information
+            </h2>
+
+
+            <div class="weather-grid">
+
+
+                <div class="card weather-card">
+
+                    <div class="weather-icon">
+                        🌧️
+                    </div>
+
+                    <div>
+
+                        <span>Rain Sensor</span>
+
+                        <strong id="rain-status">
+                            No Rain
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card weather-card">
+
+                    <div class="weather-icon">
+                        ☁️
+                    </div>
+
+                    <div>
+
+                        <span>Rain Forecast</span>
+
+                        <strong id="rain-forecast">
+                            No Rain Expected
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= NPK ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                🧪 Soil Nutrients — NPK
+            </h2>
+
+
+            <div class="npk-grid">
+
+
+                <div class="card npk-card">
+
+                    <span class="npk-symbol">
+                        N
+                    </span>
+
+                    <div>
+
+                        <span>Nitrogen</span>
+
+                        <strong>
+                            <span id="nitrogen">--</span>
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card npk-card">
+
+                    <span class="npk-symbol">
+                        P
+                    </span>
+
+                    <div>
+
+                        <span>Phosphorus</span>
+
+                        <strong>
+                            <span id="phosphorus">--</span>
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card npk-card">
+
+                    <span class="npk-symbol">
+                        K
+                    </span>
+
+                    <div>
+
+                        <span>Potassium</span>
+
+                        <strong>
+                            <span id="potassium">--</span>
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= IRRIGATION CONTROL ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                🎛️ Irrigation Control
+            </h2>
+
+
+            <div class="card control-card">
+
+
+                <div class="control-header">
+
+                    <div>
+
+                        <h3>Operating Mode</h3>
+
+                        <p>
+                            Select how the irrigation system
+                            should operate.
+                        </p>
+
+                    </div>
+
+                    <span
+                        id="mode-display"
+                        class="mode-label">
+                        AUTO
+                    </span>
+
+                </div>
+
+
+                <div class="mode-buttons">
+
+                    <button
+                        id="auto-mode"
+                        class="mode-button active">
+
+                        🤖
+                        <span>Automatic</span>
+
+                    </button>
+
+
+                    <button
+                        id="manual-mode"
+                        class="mode-button">
+
+                        🖐️
+                        <span>Manual</span>
+
+                    </button>
+
+                </div>
+
+
+                <div class="manual-controls">
+
+
+                    <button
+                        id="pump-control"
+                        class="control-button">
+
+                        💧 Pump OFF
+
+                    </button>
+
+
+                    <button
+                        id="valve1-control"
+                        class="control-button">
+
+                        🌱 Zone 1 Valve OFF
+
+                    </button>
+
+
+                    <button
+                        id="valve2-control"
+                        class="control-button">
+
+                        🌿 Zone 2 Valve OFF
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= CROP PREDICTION ================= -->
+
+        <section class="section">
+
+            <h2 class="section-title">
+                🌿 Crop Prediction
+            </h2>
+
+
+            <div class="card crop-card">
+
+
+                <div class="crop-upload">
+
+                    <div class="upload-icon">
+                        📷
+                    </div>
+
+                    <h3>
+                        Identify Your Crop
+                    </h3>
+
+                    <p>
+                        Upload a plant image to identify
+                        the crop using Machine Learning.
+                    </p>
+
+
+                    <label
+                        for="plant-image"
+                        class="upload-button">
+
+                        📁 Upload Plant Image
+
+                    </label>
+
+
+                    <input
+                        type="file"
+                        id="plant-image"
+                        accept="image/*">
+
+                </div>
+
+
+                <div class="prediction-result">
+
+                    <span>Prediction</span>
+
+                    <h3 id="crop-prediction">
+                        No image analyzed
+                    </h3>
+
+                    <p id="crop-confidence">
+                        Confidence: --
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= ALERT HISTORY ================= -->
+
+        <section class="section">
+
+            <div class="section-heading-row">
+
+                <h2 class="section-title">
+                    🔔 Alert History
+                </h2>
+
+                <button
+                    id="clear-alerts"
+                    class="clear-button">
+
+                    Clear
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="alert-history"
+                class="card alert-card">
+
+                <div class="empty-alert">
+                    No alerts available.
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="footer">
+
+        <p>
+            Multi-Zone Irrigation & Crop Prediction System
+        </p>
+
+        <p>
+            IoT • Machine Learning • Smart Agriculture
+        </p>
+
+    </footer>
+
 
     <script src="js/app.js"></script>
+
 </body>
+
 </html>
