@@ -68,6 +68,247 @@ const SETTINGS = {
 
 };
 
+// ============================================================
+// 3. CROP REQUIREMENT PROFILES BY GROWTH STAGE
+// ============================================================
+// Crop requirement profiles.
+// NPK recommendations are based on published agricultural data.
+// Temperature and humidity will be obtained from the weather API.
+// Soil moisture will be obtained from the actual soil-moisture sensor.
+//
+// Growth stages:
+// 1. Seedling       = small/young plant
+// 2. Vegetative     = medium/growing plant
+// 3. Flowering      = mature/flowering/fruiting plant
+//
+// The ML model will eventually predict BOTH:
+// Crop + Growth Stage
+// ============================================================
+
+const CROP_PROFILES = {
+
+    Chilli: {
+        seedling: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 100,
+                phosphorus: 50,
+                potassium: 50
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        vegetative: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 100,
+                phosphorus: 50,
+                potassium: 50
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        flowering: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 100,
+                phosphorus: 50,
+                potassium: 50
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        }
+    },
+
+
+    Tomato: {
+        seedling: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 120,
+                phosphorus: 80,
+                potassium: 80
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        vegetative: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 120,
+                phosphorus: 80,
+                potassium: 80
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        flowering: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 120,
+                phosphorus: 80,
+                potassium: 80
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        }
+    },
+
+
+    Chrysanthemum: {
+        seedling: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 125,
+                phosphorus: 120,
+                potassium: 25
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        vegetative: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 125,
+                phosphorus: 120,
+                potassium: 25
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        flowering: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 125,
+                phosphorus: 120,
+                potassium: 25
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        }
+    },
+
+
+    Crossandra: {
+        seedling: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 75,
+                phosphorus: 50,
+                potassium: 125
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        vegetative: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 75,
+                phosphorus: 50,
+                potassium: 125
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        },
+
+        flowering: {
+            moisture: {
+                minimum: null,
+                target: null,
+                maximum: null
+            },
+            npk: {
+                nitrogen: 75,
+                phosphorus: 50,
+                potassium: 125
+            },
+            npkUnit: "kg/ha",
+            temperature: null,
+            humidity: null
+        }
+    }
+
+};
+
+// ============================================================
+// CURRENT ML PREDICTION
+// ============================================================
+
+// The real ML model will provide these two values.
+//
+// Example:
+// selectedCrop = "Tomato";
+// selectedGrowthStage = "vegetative";
+//
+// These values will be populated after the uploaded plant
+// image is processed by the real 12-class ML model.
+
+let selectedCrop = null;
+let selectedGrowthStage = null;
+let selectedCropProfile = null;
+
 
 // ============================================================
 // 3. DOM ELEMENTS
@@ -101,6 +342,10 @@ const elements = {
     phosphorus: document.getElementById("phosphorus"),
     potassium: document.getElementById("potassium"),
 
+    plantImage: document.getElementById("plant-image"),
+    cropPrediction: document.getElementById("crop-prediction"),
+    cropConfidence: document.getElementById("crop-confidence"),
+
     modeDisplay: document.getElementById("mode-display"),
 
     autoMode: document.getElementById("auto-mode"),
@@ -127,6 +372,292 @@ const zone1Badge =
 
 const zone2Badge =
     zoneCards[1]?.querySelector(".badge");
+
+// ============================================================
+// 4A. PLANT IMAGE + REAL ML PREDICTION
+// ============================================================
+
+let mlModel = null;
+
+// Real Teachable Machine model URL will be added here
+// after the 12-class model is trained and exported.
+const MODEL_URL = "";
+
+
+async function loadMLModel() {
+
+    if (!MODEL_URL) {
+        console.warn(
+            "ML model URL has not been added yet."
+        );
+        return false;
+    }
+
+    try {
+
+        const modelURL = MODEL_URL + "model.json";
+        const metadataURL = MODEL_URL + "metadata.json";
+
+        mlModel = await tmImage.load(
+            modelURL,
+            metadataURL
+        );
+
+        console.log(
+            "Real ML model loaded successfully."
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load ML model:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+async function processPlantImage(imageElement) {
+
+    if (!mlModel) {
+
+        const loaded =
+            await loadMLModel();
+
+        if (!loaded) {
+
+            addAlert(
+                "ML model is not connected yet. Train and export the 12-class model first.",
+                "warning"
+            );
+
+            return;
+        }
+    }
+
+    try {
+
+        const predictions =
+            await mlModel.predict(
+                imageElement
+            );
+
+        if (
+            !predictions ||
+            predictions.length === 0
+        ) {
+
+            addAlert(
+                "No ML prediction was returned.",
+                "warning"
+            );
+
+            return;
+        }
+
+
+        // Find the class with the highest probability
+        const bestPrediction =
+            predictions.reduce(
+                (best, current) =>
+                    current.probability >
+                    best.probability
+                        ? current
+                        : best
+            );
+
+
+        const className =
+            bestPrediction.className;
+
+        const confidence =
+            Math.round(
+                bestPrediction.probability * 100
+            );
+
+
+        // Expected class format:
+        // Tomato_Seedling
+        // Tomato_Vegetative
+        // Tomato_Flowering
+        // Chilli_Seedling
+        // etc.
+
+        const parts =
+            className.split("_");
+
+        if (parts.length !== 2) {
+
+            console.error(
+                "Invalid ML class name:",
+                className
+            );
+
+            addAlert(
+                `Invalid ML class returned: ${className}`,
+                "warning"
+            );
+
+            return;
+        }
+
+
+        selectedCrop =
+            parts[0];
+
+        selectedGrowthStage =
+            parts[1].toLowerCase();
+
+
+        // Get the crop profile
+        if (
+            CROP_PROFILES[selectedCrop] &&
+            CROP_PROFILES[selectedCrop][selectedGrowthStage]
+        ) {
+
+            selectedCropProfile =
+                CROP_PROFILES[selectedCrop]
+                    [selectedGrowthStage];
+
+        } else {
+
+            selectedCropProfile = null;
+
+            console.error(
+                "Crop profile not found:",
+                selectedCrop,
+                selectedGrowthStage
+            );
+
+            addAlert(
+                `No crop profile found for ${className}.`,
+                "warning"
+            );
+
+            return;
+        }
+
+
+        // Display ML prediction
+        if (elements.cropPrediction) {
+
+            elements.cropPrediction.textContent =
+                `${selectedCrop} - ${formatGrowthStage(selectedGrowthStage)}`;
+        }
+
+
+        // Display confidence and crop requirements
+        if (elements.cropConfidence) {
+
+            const npk =
+                selectedCropProfile.npk;
+
+            elements.cropConfidence.innerHTML = `
+                Confidence: ${confidence}%<br><br>
+
+                <strong>🌱 Growth Stage:</strong>
+                ${formatGrowthStage(selectedGrowthStage)}<br>
+
+                <strong>🧪 NPK Recommendation:</strong>
+                N ${npk.nitrogen}
+                |
+                P ${npk.phosphorus}
+                |
+                K ${npk.potassium}
+                ${selectedCropProfile.npkUnit}<br>
+
+                <strong>🌱 Soil Moisture:</strong>
+                Actual sensor data will be used when connected.<br>
+
+                <strong>🌡️ Temperature:</strong>
+                Weather API data will be used.<br>
+
+                <strong>💦 Humidity:</strong>
+                Weather API data will be used.
+            `;
+        }
+
+
+        addAlert(
+            `🌱 ML Prediction: ${selectedCrop} (${formatGrowthStage(selectedGrowthStage)}) - ${confidence}% confidence`,
+            "info"
+        );
+
+
+        console.log(
+            "Real ML Prediction:",
+            selectedCrop,
+            selectedGrowthStage,
+            confidence
+        );
+
+        console.log(
+            "Selected Crop Profile:",
+            selectedCropProfile
+        );
+
+    } catch (error) {
+
+        console.error(
+            "ML prediction error:",
+            error
+        );
+
+        addAlert(
+            "Unable to process the plant image.",
+            "warning"
+        );
+    }
+}
+
+
+// ============================================================
+// FORMAT GROWTH STAGE
+// ============================================================
+
+function formatGrowthStage(stage) {
+
+    if (stage === "seedling") {
+        return "Seedling";
+    }
+
+    if (stage === "vegetative") {
+        return "Vegetative";
+    }
+
+    if (stage === "flowering") {
+        return "Flowering / Fruiting";
+    }
+
+    return stage;
+}
+
+
+// ============================================================
+// PLANT IMAGE UPLOAD
+// ============================================================
+
+if (elements.plantImage) {
+
+    elements.plantImage.addEventListener(
+        "change",
+        function () {
+
+            if (
+                !this.files ||
+                this.files.length === 0
+            ) {
+                return;
+            }
+
+            processPlantImage(this);
+        }
+    );
+}
 
 
 // ============================================================
@@ -428,6 +959,11 @@ function updateControls() {
 // ============================================================
 
 function updateDashboard() {
+
+        const lastUpdate = document.getElementById("last-update");
+    if (lastUpdate) {
+        lastUpdate.textContent = new Date().toLocaleTimeString();
+    }
 
     updateSoilMoisture();
 
