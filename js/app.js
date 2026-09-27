@@ -672,6 +672,162 @@ function getCurrentTime() {
 
 
 // ============================================================
+// 6A. OPEN-METEO WEATHER API
+// ============================================================
+
+const WEATHER_LATITUDE = 12.92962;
+const WEATHER_LONGITUDE = 77.62258;
+
+const WEATHER_API_URL =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${WEATHER_LATITUDE}` +
+    `&longitude=${WEATHER_LONGITUDE}` +
+    `&current=temperature_2m,relative_humidity_2m,rain,precipitation` +
+    `&hourly=precipitation_probability,rain,precipitation` +
+    `&timezone=auto` +
+    `&forecast_days=2`;
+
+async function fetchWeatherData() {
+
+    try {
+
+        const response =
+            await fetch(WEATHER_API_URL);
+
+        if (!response.ok) {
+            throw new Error(
+                `Weather API error: ${response.status}`
+            );
+        }
+
+        const data =
+            await response.json();
+
+        // ----------------------------------------------------
+        // CURRENT WEATHER
+        // ----------------------------------------------------
+
+        if (data.current) {
+
+            systemState.temperature =
+                Number(
+                    data.current.temperature_2m
+                );
+
+            systemState.humidity =
+                Number(
+                    data.current.relative_humidity_2m
+                );
+
+        }
+
+        // ----------------------------------------------------
+        // RAIN FORECAST
+        // ----------------------------------------------------
+        // Check the next 6 forecast hours.
+        // If precipitation probability reaches 50% or
+        // forecast rain is greater than 0 mm, rain is expected.
+        // ----------------------------------------------------
+
+        systemState.rainExpected = false;
+
+        if (
+            data.hourly &&
+            Array.isArray(
+                data.hourly.precipitation_probability
+            )
+        ) {
+
+            const currentTime =
+                new Date();
+
+            const currentHour =
+                currentTime.getHours();
+
+            const startIndex =
+                Math.max(
+                    0,
+                    currentHour
+                );
+
+            const endIndex =
+                Math.min(
+                    startIndex + 6,
+                    data.hourly
+                        .precipitation_probability
+                        .length
+                );
+
+            for (
+                let i = startIndex;
+                i < endIndex;
+                i++
+            ) {
+
+                const probability =
+                    Number(
+                        data.hourly
+                            .precipitation_probability[i]
+                    ) || 0;
+
+                const rain =
+                    Number(
+                        data.hourly.rain[i]
+                    ) || 0;
+
+                if (
+                    probability >= 50 ||
+                    rain > 0
+                ) {
+
+                    systemState.rainExpected =
+                        true;
+
+                    break;
+                }
+            }
+        }
+
+        console.log(
+            "Open-Meteo Weather:",
+            {
+                temperature:
+                    systemState.temperature,
+                humidity:
+                    systemState.humidity,
+                rainExpected:
+                    systemState.rainExpected
+            }
+        );
+
+        updateDashboard();
+
+    } catch (error) {
+
+        console.error(
+            "Weather API failed:",
+            error
+        );
+
+        addAlert(
+            "⚠️ Weather API data could not be updated.",
+            "warning"
+        );
+    }
+}
+
+
+// Get weather immediately when the dashboard starts
+fetchWeatherData();
+
+// Refresh weather every 10 minutes
+setInterval(
+    fetchWeatherData,
+    10 * 60 * 1000
+);
+
+
+// ============================================================
 // 6. ALERT SYSTEM
 // ============================================================
 
@@ -1813,11 +1969,6 @@ function runSystemCycle() {
     // First simulate watering
 
     simulateWatering();
-
-
-    // Simulate sensor values
-
-    simulateSensors();
 
 
     // Check safety conditions
